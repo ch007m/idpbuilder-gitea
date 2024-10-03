@@ -21,3 +21,14 @@ spec:
           
           echo "## Pinging gitea.cnoe.localtest.me ..."
           ping -c 4 gitea.cnoe.localtest.me
+
+      - name: curl-gitea
+        image: quay.io/curl/curl:latest
+        script: |
+          #!/bin/sh
+          
+          echo "## Hack to allow to access: gitea.cnoe.localtest.me"
+          echo "127.0.0.1 gitea.cnoe.localtest.me" >> /etc/hosts
+          
+          echo "## Pinging gitea.cnoe.localtest.me ..."
+          curl -v -k https://gitea.cnoe.localtest.me:8443/api/swagger

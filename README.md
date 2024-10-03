@@ -106,7 +106,7 @@ NAME        READY   STATUS    RESTARTS   AGE
 debug-pod   1/1     Running   0          2m9s
 ```
 
-## Step demonstrating that we can ping the gitea server if we add localhost to /etc/hosts
+## Step demonstrating that we cannot curl the gitea server
 
 ```bash
 kubectl -n demo apply -f kubernetes/simple-task.yaml
@@ -135,6 +135,21 @@ tkn -n demo taskrun logs gitea-server-check
 [check-ping] --- gitea.cnoe.localtest.me ping statistics ---
 [check-ping] 4 packets transmitted, 4 packets received, 0% packet loss
 [check-ping] round-trip min/avg/max = 0.111/0.166/0.251 ms
+
+BUT 
+
+[curl-gitea] /tekton/scripts/script-1-j7bvg: line 4: can't create /etc/hosts: Permission denied
+[curl-gitea]   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+[curl-gitea]                                  Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0* Host gitea.cnoe.localtest.me:8443 was resolved.
+[curl-gitea] * IPv6: (none)
+[curl-gitea] * IPv4: 127.0.0.1
+[curl-gitea] *   Trying 127.0.0.1:8443...
+[curl-gitea] * connect to 127.0.0.1 port 8443 from 127.0.0.1 port 60442 failed: Connection refused
+[curl-gitea] * Failed to connect to gitea.cnoe.localtest.me port 8443 after 0 ms: Could not connect to server
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+[curl-gitea] * closing connection #0
+[curl-gitea] curl: (7) Failed to connect to gitea.cnoe.localtest.me port 8443 after 0 ms: Could not connect to server
 
 container step-check-ping has failed  : [{"key":"StartedAt","value":"2024-10-03T17:05:39.973Z","type":3}]
 ```
