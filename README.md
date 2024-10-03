@@ -61,6 +61,13 @@ podman network inspect kind | jq -r '.[].subnets.[1].gateway'
 ```
 - Update the parameter: `podman-host` within the file `kubernetes/02-pipelinerun.yml` 
 
+- Create a `demo` namespace and secret with the registry credentials: dockerhub and gitea
+```bash
+podman login docker.io -u xxxx -p xxxx
+podman login --tls-verify=false gitea.cnoe.localtest.me:8443 -u giteaAdmin -p $(idpbuilder get secrets -o json | jq -r '.[1].data.password')
+kubectl create secret generic dockerconfig-secret --from-file=config.json=$HOME/.config/containers/auth.json -n demo
+```
+
 - Deploy the Tekton pipeline able to build/test a Quarkus application and pushing the image
   to `gitea.cnoe.localtest.me:8443/giteaadmin/my-quarkus-app`
 
