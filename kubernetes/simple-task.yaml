@@ -11,13 +11,10 @@ spec:
           #!/bin/sh
           
           cat /etc/hosts
+          cat /etc/resolv.conf
+          
+          echo "## Hack to allow to access: gitea.cnoe.localtest.me"
+          echo "127.0.0.1 gitea.cnoe.localtest.me" >> /etc/hosts
           
           echo "## Pinging gitea.cnoe.localtest.me ..."
           ping -c 4 gitea.cnoe.localtest.me
-
-      - name: check-curl
-        image: curlimages/curl # This image comes with curl installed
-        script: |
-          #!/bin/bash
-          echo "## Curling gitea.cnoe.localtest.me..."
-          curl -v -k https://gitea.cnoe.localtest.me
