@@ -70,6 +70,10 @@ kubectl create secret generic dockerconfig-secret --from-file=config.json=$HOME/
 
 - Deploy the Tekton pipeline able to build/test a Quarkus application and pushing the image
   to `gitea.cnoe.localtest.me:8443/giteaadmin/my-quarkus-app`
+```bash
+kubectl -n demo apply -f pipelines
+```
+**Note**: To replay, delete the resources `kubectl -n demo delete -f pipelines` and re-deploy them
 
 - Open the Tekton UI: https://tekton-ui.cnoe.localtest.me:8443 and follow the execution of the following job: `https://tekton-ui.cnoe.localtest.me:8443/#/namespaces/demo/pipelineruns/build-push-image`
 
