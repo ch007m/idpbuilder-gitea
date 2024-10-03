@@ -101,15 +101,35 @@ NAME        READY   STATUS    RESTARTS   AGE
 debug-pod   1/1     Running   0          2m9s
 ```
 
-## Step demonstrating that we cannot ping the gitea server
+## Step demonstrating that we can ping the gitea server if we add localhost to /etc/hosts
 
 ```bash
 kubectl -n demo apply -f kubernetes/simple-task.yaml
 ...
 tkn -n demo taskrun logs gitea-server-check
-task Task 0 has failed: "step-check-ping" exited with code 1
-[check-ping] ## Pinging gitea.cnoe.localtest.me...
-[check-ping] ping: bad address 'gitea.cnoe.localtest.me'
+
+[check-ping] # Kubernetes-managed hosts file.
+[check-ping] 127.0.0.1  localhost
+[check-ping] ::1        localhost ip6-localhost ip6-loopback
+[check-ping] fe00::0    ip6-localnet
+[check-ping] fe00::0    ip6-mcastprefix
+[check-ping] fe00::1    ip6-allnodes
+[check-ping] fe00::2    ip6-allrouters
+[check-ping] 10.244.0.57        gitea-server-check-pod
+[check-ping] search demo.svc.cluster.local svc.cluster.local cluster.local dns.podman
+[check-ping] nameserver 10.96.0.10
+[check-ping] options ndots:5
+[check-ping] ## Hack to allow to access: gitea.cnoe.localtest.me
+[check-ping] ## Pinging gitea.cnoe.localtest.me ...
+[check-ping] PING gitea.cnoe.localtest.me (127.0.0.1): 56 data bytes
+[check-ping] 64 bytes from 127.0.0.1: seq=0 ttl=64 time=0.251 ms
+[check-ping] 64 bytes from 127.0.0.1: seq=1 ttl=64 time=0.111 ms
+[check-ping] 64 bytes from 127.0.0.1: seq=2 ttl=64 time=0.141 ms
+[check-ping] 64 bytes from 127.0.0.1: seq=3 ttl=64 time=0.163 ms
+[check-ping] 
+[check-ping] --- gitea.cnoe.localtest.me ping statistics ---
+[check-ping] 4 packets transmitted, 4 packets received, 0% packet loss
+[check-ping] round-trip min/avg/max = 0.111/0.166/0.251 ms
 
 container step-check-ping has failed  : [{"key":"StartedAt","value":"2024-10-03T17:05:39.973Z","type":3}]
 ```
