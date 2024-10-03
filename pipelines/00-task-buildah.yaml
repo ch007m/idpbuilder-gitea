@@ -109,8 +109,8 @@ spec:
         # build the image (CERT_DIR_FLAG should be omitted if empty and BUILD_EXTRA_ARGS can contain multiple args)
         # shellcheck disable=SC2046,SC2086
         
-        echo "## Let's try to curl gitea"
-        curl -k https://gitea.cnoe.localtest.me:8443/api/swagger
+        echo "## Hack to allow to access: gitea.cnoe.localtest.me"
+        echo "127.0.0.1 gitea.cnoe.localtest.me" >> /etc/hosts
         
         echo "## Build the project ..."
         buildah ${CERT_DIR_FLAG} "--storage-driver=${PARAM_STORAGE_DRIVER}" bud "${BUILD_ARGS[@]}" ${PARAM_BUILD_EXTRA_ARGS} \
