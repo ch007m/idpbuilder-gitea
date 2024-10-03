@@ -6,7 +6,7 @@
 
 ## Instructions
 
-- Create a cluster using `idpbuilder` (>= 0.7) and install the `Tekton` package
+- Create a Kind cluster using the [idpbuilder](https://github.com/cnoe-io/idpbuilder/) CLI (>= 0.7) and install the `Tekton` package
 
 ```bash
 export DOCKER_HOST="unix:///var/run/docker.sock"
