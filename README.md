@@ -6,7 +6,7 @@
 
 ## Instructions
 
-- Create a cluster using the `idpbuilder` and install the `Tekton` package
+- Create a cluster using `idpbuilder` (>= 0.7) and install the `Tekton` package
 
 ```bash
 export DOCKER_HOST="unix:///var/run/docker.sock"
