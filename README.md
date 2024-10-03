@@ -74,18 +74,23 @@ kubectl create secret generic dockerconfig-secret --from-file=config.json=$HOME/
   to `gitea.cnoe.localtest.me:8443/giteaadmin/my-quarkus-app`
 ```bash
 kubectl -n demo apply -f pipelines
+tkn -n demo pr logs -f
 ```
 **Note**: To replay, delete the resources `kubectl -n demo delete -f pipelines` and re-deploy them
 
 - Open the Tekton UI: https://tekton-ui.cnoe.localtest.me:8443 and follow the execution of the following job: `https://tekton-ui.cnoe.localtest.me:8443/#/namespaces/demo/pipelineruns/build-push-image`
 
-- Observe at the step `build-and-push` that curl request will fail
-```bash
-## Let's try to curl gitea
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
+- Observe at the step `build-and-push` what it is happening
+```text
+...
+I got another issue now even using the hack 
+[buildah-image : build-and-push] time="2024-10-03T17:23:15Z" level=warning msg="Failed, retrying in 4s ... (3/3). Error: trying to reuse blob sha256:dd5e77a90e609b328f2e49aa60e50bd8837e505c157060c337725413ccf449f1 at destination: pinging container registry gitea.cnoe.localtest.me:8443: Get \"https://gitea.cnoe.localtest.me:8443/v2/\": dial tcp 127.0.0.1:8443: connect: connection refused"
+[buildah-image : build-and-push] Getting image source signatures
+[buildah-image : build-and-push] Copying blob sha256:72fa8206770d7c12f6e10be169329790d09af8fce623d03a6e48fdc3d6a36436
+[buildah-image : build-and-push] Copying blob sha256:dd5e77a90e609b328f2e49aa60e50bd8837e505c157060c337725413ccf449f1
+[buildah-image : build-and-push] Copying blob sha256:8b30b41a0b038bf660c4538ae04bb77b7cdbfcfcb0f5a378129ddf82b91542e7
+[buildah-image : build-and-push] Error: pushing image "gitea.cnoe.localtest.me:8443/giteaadmin/my-quarkus-app" to "docker://gitea.cnoe.localtest.me:8443/giteaadmin/my-quarkus-app": trying to reuse blob sha256:dd5e77a90e609b328f2e49aa60e50bd8837e505c157060c337725413ccf449f1 at destination: pinging container registry gitea.cnoe.localtest.me:8443: Get "https://gitea.cnoe.localtest.me:8443/v2/": dial tcp 127.0.0.1:8443: connect: connection refused
 
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0curl: (6) Could not resolve host: gitea.cnoe.localtest.me 
 ```
 
 ## Step validating that a pod can be created using a gitea image
