@@ -9,7 +9,8 @@
 - Create a cluster using the `idpbuilder` and install the `Tekton` package
 
 ```bash
-idpbuilder create -p idp/tekton
+export DOCKER_HOST="unix:///var/run/docker.sock"
+idpbuilder create --color -p idp/packages/tekton
 ```
 
 - When, idp is up and running, check that you can access to 
