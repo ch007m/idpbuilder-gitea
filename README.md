@@ -63,7 +63,7 @@ podman network inspect kind | jq -r '.[].subnets.[1].gateway'
 ```
 - Update the parameter: `podman-host` within the file `kubernetes/02-pipelinerun.yml` 
 
-- Create a `demo` namespace and secret with the registry credentials: dockerhub and gitea
+- Create a `demo` namespace and kubernetes secret with the registry credentials of your `dockerhub` account and the one of gitea
 ```bash
 podman login docker.io -u xxxx -p xxxx
 podman login --tls-verify=false gitea.cnoe.localtest.me:8443 -u giteaAdmin -p $(idpbuilder get secrets -o json | jq -r '.[1].data.password')
