@@ -108,15 +108,22 @@ spec:
         [ "$(workspaces.dockerconfig.bound)" = "true" ] && DOCKER_CONFIG="$(workspaces.dockerconfig.path)" && export DOCKER_CONFIG
         # build the image (CERT_DIR_FLAG should be omitted if empty and BUILD_EXTRA_ARGS can contain multiple args)
         # shellcheck disable=SC2046,SC2086
+        
+        echo "## Let's try to curl gitea"
+        curl -k https://gitea.cnoe.localtest.me:8443/api/swagger
+        
+        echo "## Build the project ..."
         buildah ${CERT_DIR_FLAG} "--storage-driver=${PARAM_STORAGE_DRIVER}" bud "${BUILD_ARGS[@]}" ${PARAM_BUILD_EXTRA_ARGS} \
           "--format=${PARAM_FORMAT}" "--tls-verify=${PARAM_TLSVERIFY}" \
           -f "${PARAM_DOCKERFILE}" -t "${PARAM_IMAGE}" "${PARAM_CONTEXT}"
         [ "${PARAM_SKIP_PUSH}" = "true" ] && echo "Push skipped" && exit 0
+        
         # push the image (CERT_DIR_FLAG should be omitted if empty and PUSH_EXTRA_ARGS can contain multiple args)
         # shellcheck disable=SC2046,SC2086
         buildah ${CERT_DIR_FLAG} "--storage-driver=${PARAM_STORAGE_DRIVER}" push ${PARAM_PUSH_EXTRA_ARGS} \
           "--tls-verify=${PARAM_TLSVERIFY}" --digestfile /tmp/image-digest "${PARAM_IMAGE}" \
           "docker://${PARAM_IMAGE}"
+        
         tee "$(results.IMAGE_DIGEST.path)" < /tmp/image-digest
         printf '%s' "${PARAM_IMAGE}" | tee "$(results.IMAGE_URL.path)"
       volumeMounts:

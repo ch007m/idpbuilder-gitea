@@ -79,3 +79,17 @@ kubectl -n demo apply -f pipelines
 
 - Open the Tekton UI: https://tekton-ui.cnoe.localtest.me:8443 and follow the execution of the following job: `https://tekton-ui.cnoe.localtest.me:8443/#/namespaces/demo/pipelineruns/build-push-image`
 
+## Step validating that a od can be created using a gitea image
+
+You can verify that we can pull/tag and push an image like also to run a pod using the image pushed on gitea
+```bash
+podman tag docker.io/library/ubuntu:24.04 gitea.cnoe.localtest.me:8443/giteaadmin/ubuntu:24.04
+podman push gitea.cnoe.localtest.me:8443/giteaadmin/ubuntu:24.04 --tls-verify=false
+kubectl apply -n demo -f kubernetes/simple.pod.yaml
+...
+kubectl get -n demo pod/debug-pod
+NAME        READY   STATUS    RESTARTS   AGE
+debug-pod   1/1     Running   0          2m9s
+```
+
+
