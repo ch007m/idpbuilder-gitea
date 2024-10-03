@@ -1,0 +1,23 @@
+apiVersion: tekton.dev/v1
+kind: TaskRun
+metadata:
+  name: gitea-server-check
+spec:
+  taskSpec:
+    steps:
+      - name: check-ping
+        image: busybox # Use a lightweight image like busybox, or you can also use curlimages/curl
+        script: |
+          #!/bin/sh
+          
+          cat /etc/hosts
+          
+          echo "## Pinging gitea.cnoe.localtest.me ..."
+          ping -c 4 gitea.cnoe.localtest.me
+
+      - name: check-curl
+        image: curlimages/curl # This image comes with curl installed
+        script: |
+          #!/bin/bash
+          echo "## Curling gitea.cnoe.localtest.me..."
+          curl -v -k https://gitea.cnoe.localtest.me

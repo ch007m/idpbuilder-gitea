@@ -101,4 +101,17 @@ NAME        READY   STATUS    RESTARTS   AGE
 debug-pod   1/1     Running   0          2m9s
 ```
 
+## Step demonstrating that we cannot ping the gitea server
+
+```bash
+kubectl -n demo apply -f kubernetes/simple-task.yaml
+...
+tkn -n demo taskrun logs gitea-server-check
+task Task 0 has failed: "step-check-ping" exited with code 1
+[check-ping] ## Pinging gitea.cnoe.localtest.me...
+[check-ping] ping: bad address 'gitea.cnoe.localtest.me'
+
+container step-check-ping has failed  : [{"key":"StartedAt","value":"2024-10-03T17:05:39.973Z","type":3}]
+```
+
 
