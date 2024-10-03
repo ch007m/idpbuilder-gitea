@@ -19,9 +19,11 @@ idpbuilder create --color -p idp/packages/tekton
   - https://tekton-ui.cnoe.localtest.me:8443
 
 
-- Expose the Podman API as TCP Service on the port `2375`
+- Expose the Podman API as TCP Service on the port `2375`.
+**Note**: If podman runs in a VM on your laptop, ssh first to it: `podman machine ssh`
 ```bash
 podman system service tcp:0.0.0.0:2375 --log-level=debug --time=0 &
+...
 DEBU[0000] Called service.PersistentPreRunE(podman system service tcp:0.0.0.0:2375 --log-level=debug --time=0)
 DEBU[0000] Using conmon: "/usr/bin/conmon"
 INFO[0000] Using sqlite as database backend
