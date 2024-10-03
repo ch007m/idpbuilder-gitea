@@ -13,10 +13,10 @@ export DOCKER_HOST="unix:///var/run/docker.sock"
 idpbuilder create --color -p idp/packages/tekton
 ```
 
-- When, idp is up and running, check that you can access to 
-:
-- https://gitea.cnoe.localtest.me:8443
-- https://tekton-ui.cnoe.localtest.me:8443
+- When, idp is up and running, check that you can access the following urls:
+
+  - https://gitea.cnoe.localtest.me:8443
+  - https://tekton-ui.cnoe.localtest.me:8443
 
 
 - Expose the Podman API as TCP Service on the port `2375`
