@@ -27,10 +27,10 @@ spec:
     - name: mavenGoals
       value:
         - package
-        - '-DskipTests=true'
+        - '-DskipTests=true' # can be false to verify during the test execution that testcontainer can create a postgresql container !
         - '-B'
-        - '-Dquarkus.container-image.build=true'
-        - '-Dquarkus.container-image.push=true'
+        - '-Dquarkus.container-image.build=false'
+        - '-Dquarkus.container-image.push=false'
         - '-Dquarkus.container-image.image=$(params.output-image)'
 
   pipelineRef:
