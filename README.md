@@ -79,6 +79,15 @@ kubectl -n demo apply -f pipelines
 
 - Open the Tekton UI: https://tekton-ui.cnoe.localtest.me:8443 and follow the execution of the following job: `https://tekton-ui.cnoe.localtest.me:8443/#/namespaces/demo/pipelineruns/build-push-image`
 
+- Observe at the step `build-and-push` that curl request will fail
+```bash
+## Let's try to curl gitea
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0curl: (6) Could not resolve host: gitea.cnoe.localtest.me 
+```
+
 ## Step validating that a pod can be created using a gitea image
 
 You can verify that we can pull/tag and push an image like also to run a pod using the image pushed on gitea
