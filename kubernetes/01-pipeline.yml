@@ -1,0 +1,152 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: build-push-image
+  labels:
+    app.kubernetes.io/instance: build-push-image
+    backstage.io/kubernetes-id: my-quarkus-app
+spec:
+  params:
+    - description: url of the git repository to clone
+      name: url
+      type: string
+    - description: Path to the dockerfile within the project cloned
+      name: dockerfile
+      type: string
+    - description: Fully Qualified Output Image
+      name: output-image
+      type: string
+    - default: 'false'
+      description: A boolean indicating whether we would like to perform a quarkus native build
+      name: native
+      type: string
+    - default: 'false'
+      description: A boolean indicating whether we would like to execute a task
+      name: debug
+      type: string
+    - default: 'true'
+      description: boolean which allows to deploy the application on the cluster with the generated resources
+      name: deploy
+      type: string
+    - description: Podman Hostname or IP address
+      name: podman-host
+      type: string
+    - default: "."
+      description: Maven context directory
+      name: contextDir
+      type: string
+    - default: ["package"]
+      description: Maven argument to be used to build
+      name: mavenGoals
+      type: array
+  tasks:
+    - name: rm-workspace
+      taskRef:
+        kind: Task
+        name: rm-workspace
+      workspaces:
+        - name: project-dir
+          workspace: project-dir
+    - name: git-clone
+      params:
+        - name: url
+          value: $(params.url)
+      runAfter:
+        - rm-workspace
+      taskRef:
+        kind: Task
+        name: git-clone
+      workspaces:
+        - name: project-dir
+          workspace: project-dir
+
+    - name: create-container-remote-docker
+      runAfter:
+        - git-clone
+      taskSpec:
+        steps:
+          - computeResources: {}
+            image: quay.io/containers/podman:v5.0.3
+            name: create-container
+            script: |
+              echo "Creating a container against daemon host: $(params.podman-host)."
+              PODMAN_CMD="podman -r --url=tcp://$(params.podman-host):2375"
+              
+              # $PODMAN_CMD version
+
+              $PODMAN_CMD run -i --name my-postgres -e POSTGRES_PASSWORD=mysecretpassword -p 5432:5432 docker.io/postgres
+
+              CONTAINER_ID=$($PODMAN_CMD ps -f name=my-postgres --format=json | jq -r '.[] | .Id')
+              $PODMAN_CMD kill $CONTAINER_ID
+              $PODMAN_CMD rm $CONTAINER_ID
+      when:
+        - input: $(params.debug)
+          operator: in
+          values:
+            - 'true'
+
+    - name: maven-package-test
+      params:
+        - name: DOCKER_HOST
+          value: 'tcp://$(params.podman-host):2375'
+        - name: DOCKER_CONFIG
+          value: $(workspaces.dockerconfig.path)/config.json
+        - name: CONTEXT_DIR
+          value: $(params.contextDir)
+        - name: GOALS
+          value:
+            - $(params.mavenGoals[*])
+      runAfter:
+        - create-container-remote-docker
+      taskRef:
+        kind: Task
+        name: maven
+      workspaces:
+        - name: maven-settings
+          workspace: maven-settings
+        - name: project-dir
+          workspace: project-dir
+        - name: maven-m2-repo
+          workspace: maven-m2-repo
+        - name: dockerconfig
+          workspace: dockerconfig-ws
+
+    - name: quarkus-native-build
+      runAfter:
+        - maven-package-test
+      taskRef:
+        kind: Task
+        name: quarkus-native-build
+      when:
+        - input: $(params.native)
+          operator: in
+          values:
+            - 'true'
+      workspaces:
+        - name: project-dir
+          workspace: project-dir
+
+    - name: buildah-image
+      params:
+        - name: IMAGE
+          value: $(params.output-image)
+        - name: DOCKERFILE
+          value: $(params.dockerfile)
+        - name: REGISTRY_AUTH_PATH
+          value: $(workspaces.dockerconfig.path)
+      runAfter:
+        - quarkus-native-build
+        - maven-package-test
+      taskRef:
+        kind: Task
+        name: buildah
+      workspaces:
+        - name: source
+          workspace: project-dir
+        - name: dockerconfig
+          workspace: dockerconfig-ws
+  workspaces:
+    - name: project-dir
+    - name: maven-m2-repo
+    - name: maven-settings
+    - name: dockerconfig-ws

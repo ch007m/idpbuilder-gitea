@@ -1,0 +1,68 @@
+---
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  name: build-push-image
+  labels:
+    app.kubernetes.io/instance: build-push-image
+    backstage.io/kubernetes-id: my-quarkus-app
+    tekton.dev/pipeline: build-push-image
+spec:
+  params:
+    - name: dockerfile
+      value: src/main/docker/Dockerfile.jvm
+    - name: output-image
+      #value: "my-gitea-http.gitea:3000/giteaadmin/my-quarkus-app"
+      value: "gitea.cnoe.localtest.me:8443/giteaadmin/my-quarkus-app"
+    - name: TLSVERIFY
+      value: false
+    - name: url
+      value: 'https://github.com/ch007m/quarkus-orm-postgres.git'
+    - name: native
+      value: 'false'
+    - name: podman-host
+      value: 10.89.0.1 # This is the IP address that you got from the `kind` network : podman network inspect kind | jq -r '.[].subnets.[1].gateway'
+    - name: debug
+      value: false
+    - name: mavenGoals
+      value:
+        - package
+        - '-DskipTests=true'
+        - '-B'
+        - '-Dquarkus.container-image.build=true'
+        - '-Dquarkus.container-image.push=true'
+        - '-Dquarkus.container-image.image=$(params.output-image)'
+
+  pipelineRef:
+    name: build-push-image
+  #taskRunTemplate:
+  #  serviceAccountName: pipeline
+  timeouts:
+    pipeline: 1h0m0s
+  workspaces:
+    - name: project-dir
+      volumeClaimTemplate:
+        apiVersion: "v1"
+        kind: "PersistentVolumeClaim"
+        spec:
+          accessModes:
+            - "ReadWriteOnce"
+          resources:
+            requests:
+              storage: "1Gi"
+    - name: maven-m2-repo
+      volumeClaimTemplate:
+        apiVersion: "v1"
+        kind: "PersistentVolumeClaim"
+        spec:
+          accessModes:
+            - "ReadWriteOnce"
+          resources:
+            requests:
+              storage: "1Gi"
+    - name: maven-settings
+      configMap:
+        name: maven-settings
+    - name: dockerconfig-ws
+      secret:
+        secretName: dockerconfig-secret
