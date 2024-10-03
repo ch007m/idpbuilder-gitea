@@ -66,7 +66,7 @@ podman network inspect kind | jq -r '.[].subnets.[1].gateway'
 - Create a `demo` namespace and kubernetes secret with the registry credentials of your `dockerhub` account and the one of gitea
 ```bash
 podman login docker.io -u xxxx -p xxxx
-podman login --tls-verify=false gitea.cnoe.localtest.me:8443 -u giteaAdmin -p $(idpbuilder get secrets -o json | jq -r '.[1].data.password')
+podman login --tls-verify=false gitea.cnoe.localtest.me:8443 -u giteaAdmin -p $(idpbuilder get secrets -o json -p gitea | jq -r '.[].data.password')
 kubectl create secret generic dockerconfig-secret --from-file=config.json=$HOME/.config/containers/auth.json -n demo
 ```
 
