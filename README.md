@@ -13,7 +13,7 @@ rewrite stop {
 with this one
 ```bash
  rewrite stop {
-   name exact gitea.cnoe.localtest.me.gitea.svc.cluster.local ingress-nginx-controller.ingress-nginx.svc.cluster.local
+   name exact gitea.cnoe.localtest.me.demo.svc.cluster.local ingress-nginx-controller.ingress-nginx.svc.cluster.local
  }
  rewrite name exact cnoe.localtest.me ingress-nginx-controller.ingress-nginx.svc.cluster.local
 ```
