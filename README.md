@@ -1,6 +1,6 @@
 # How to reproduce the idpbuilder gitea issue
 
-The problem reported here is related to an issue with the coreDNS rewrite rules as discussed here:
+The problem reported here is related to an issue with the coreDNS [rewrite](https://coredns.io/plugins/rewrite/) rules as discussed here:
 
 https://github.com/cnoe-io/idpbuilder/issues/398#issuecomment-2396906079
 
