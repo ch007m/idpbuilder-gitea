@@ -108,9 +108,9 @@ spec:
         [ "$(workspaces.dockerconfig.bound)" = "true" ] && DOCKER_CONFIG="$(workspaces.dockerconfig.path)" && export DOCKER_CONFIG
         # build the image (CERT_DIR_FLAG should be omitted if empty and BUILD_EXTRA_ARGS can contain multiple args)
         # shellcheck disable=SC2046,SC2086
-        
-        echo "## Hack to allow to access: gitea.cnoe.localtest.me"
-        echo "127.0.0.1 gitea.cnoe.localtest.me" >> /etc/hosts
+      
+        echo "## Buildah version"
+        buildah -v 
         
         echo "## Build the project ..."
         buildah ${CERT_DIR_FLAG} "--storage-driver=${PARAM_STORAGE_DRIVER}" bud "${BUILD_ARGS[@]}" ${PARAM_BUILD_EXTRA_ARGS} \
@@ -118,11 +118,11 @@ spec:
           -f "${PARAM_DOCKERFILE}" -t "${PARAM_IMAGE}" "${PARAM_CONTEXT}"
         [ "${PARAM_SKIP_PUSH}" = "true" ] && echo "Push skipped" && exit 0
         
-        # push the image (CERT_DIR_FLAG should be omitted if empty and PUSH_EXTRA_ARGS can contain multiple args)
-        # shellcheck disable=SC2046,SC2086
+        set -x 
         buildah ${CERT_DIR_FLAG} "--storage-driver=${PARAM_STORAGE_DRIVER}" push ${PARAM_PUSH_EXTRA_ARGS} \
           "--tls-verify=${PARAM_TLSVERIFY}" --digestfile /tmp/image-digest "${PARAM_IMAGE}" \
           "docker://${PARAM_IMAGE}"
+        set +x
         
         tee "$(results.IMAGE_DIGEST.path)" < /tmp/image-digest
         printf '%s' "${PARAM_IMAGE}" | tee "$(results.IMAGE_URL.path)"

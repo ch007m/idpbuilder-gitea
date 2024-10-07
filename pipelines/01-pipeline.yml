@@ -31,6 +31,9 @@ spec:
     - description: Podman Hostname or IP address
       name: podman-host
       type: string
+    - description: buildah parameter to call the HTTPS registry and verify or not the TLS certificate
+      name: tls-verify
+      type: string
     - default: "."
       description: Maven context directory
       name: contextDir
@@ -39,6 +42,9 @@ spec:
       description: Maven argument to be used to build
       name: mavenGoals
       type: array
+    - description: registry host and port
+      name: registryHost
+      type: string
   tasks:
     - name: rm-workspace
       taskRef:
@@ -60,30 +66,49 @@ spec:
         - name: project-dir
           workspace: project-dir
 
-    - name: create-container-remote-docker
+    - name: curl-gitea
       runAfter:
         - git-clone
       taskSpec:
         steps:
-          - computeResources: {}
-            image: quay.io/containers/podman:v5.0.3
-            name: create-container
+          - image: quay.io/curl/curl:latest
+            name: curl-gitea
             script: |
-              echo "Creating a container against daemon host: $(params.podman-host)."
-              PODMAN_CMD="podman -r --url=tcp://$(params.podman-host):2375"
-              
-              # $PODMAN_CMD version
+              #!/bin/sh
+    
+              echo "## Host and DNS nameservers cfg ..."
+              cat /etc/hosts
+              cat /etc/resolv.conf
+    
+              echo "## Using as image: quay.io/curl/curl"
+    
+              echo "## Curl to the registry host: https://$(params.registryHost)/api/swagger ..."
+              curl -v -k https://$(params.registryHost)/api/swagger
 
-              $PODMAN_CMD run -i --name my-postgres -e POSTGRES_PASSWORD=mysecretpassword -p 5432:5432 docker.io/postgres
-
-              CONTAINER_ID=$($PODMAN_CMD ps -f name=my-postgres --format=json | jq -r '.[] | .Id')
-              $PODMAN_CMD kill $CONTAINER_ID
-              $PODMAN_CMD rm $CONTAINER_ID
-      when:
-        - input: $(params.debug)
-          operator: in
-          values:
-            - 'true'
+    #- name: create-container-remote-docker
+    #  runAfter:
+    #    - git-clone
+    #  taskSpec:
+    #    steps:
+    #      - image: quay.io/containers/podman:v5.0.3
+    #        #image: quay.io/konflux-ci/buildah-task:latest@sha256:860a239c5f25376a435a514ae6d53a5c75b1fa492461d17774e9b7cb32d1e275
+    #        name: create-container
+    #        script: |
+    #          echo "Creating a container against daemon host: $(params.podman-host)."
+    #          PODMAN_CMD="podman -r --url=tcp://$(params.podman-host):2375"
+    #
+    #          $PODMAN_CMD version
+    #
+    #          $PODMAN_CMD run -i --name my-postgres -e POSTGRES_PASSWORD=mysecretpassword -p 5432:5432 docker.io/postgres
+    #
+    #          CONTAINER_ID=$($PODMAN_CMD ps -f name=my-postgres --format=json | jq -r '.[] | .Id')
+    #          $PODMAN_CMD kill $CONTAINER_ID
+    #          $PODMAN_CMD rm $CONTAINER_ID
+    #  when:
+    #    - input: $(params.debug)
+    #      operator: in
+    #      values:
+    #        - 'true'
 
     - name: maven-package-test
       params:
@@ -97,7 +122,8 @@ spec:
           value:
             - $(params.mavenGoals[*])
       runAfter:
-        - create-container-remote-docker
+        - git-clone
+        #- create-container-remote-docker
       taskRef:
         kind: Task
         name: maven
@@ -134,6 +160,8 @@ spec:
           value: $(params.dockerfile)
         - name: REGISTRY_AUTH_PATH
           value: $(workspaces.dockerconfig.path)
+        - name: TLSVERIFY
+          value: $(params.tls-verify)
       runAfter:
         - quarkus-native-build
         - maven-package-test

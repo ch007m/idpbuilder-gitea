@@ -1,5 +1,24 @@
 # How to reproduce the idpbuilder gitea issue
 
+The problem reported here is related to an issue with the coreDNS rewrite rules as discussed here:
+
+https://github.com/cnoe-io/idpbuilder/issues/398#issuecomment-2396906079
+
+If we change the existing rule 
+```bash
+rewrite stop {
+    name regex (.*).{{ .Host }} ingress-nginx-controller.ingress-nginx.svc.cluster.local
+}
+```
+with this one
+```bash
+ rewrite stop {
+   name exact gitea.cnoe.localtest.me.gitea.svc.cluster.local ingress-nginx-controller.ingress-nginx.svc.cluster.local
+ }
+ rewrite name exact cnoe.localtest.me ingress-nginx-controller.ingress-nginx.svc.cluster.local
+```
+then `buildah push` works internally
+
 ## Pre-requisites
 
 - podman >= 5.x
@@ -67,6 +86,8 @@ podman network inspect kind | jq -r '.[].subnets.[1].gateway'
 ```bash
 podman login docker.io -u xxxx -p xxxx
 podman login --tls-verify=false gitea.cnoe.localtest.me:8443 -u giteaAdmin -p $(idpbuilder get secrets -o json -p gitea | jq -r '.[].data.password')
+
+kubectl create ns demo
 kubectl create secret generic dockerconfig-secret --from-file=config.json=$HOME/.config/containers/auth.json -n demo
 ```
 

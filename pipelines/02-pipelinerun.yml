@@ -9,21 +9,30 @@ metadata:
     tekton.dev/pipeline: build-push-image
 spec:
   params:
+    #### Begin - Pipeline parameters ####
+    - name: debug
+      value: false
     - name: dockerfile
       value: src/main/docker/Dockerfile.jvm
     - name: output-image
-      #value: "my-gitea-http.gitea:3000/giteaadmin/my-quarkus-app"
-      value: "gitea.cnoe.localtest.me:8443/giteaadmin/my-quarkus-app"
-    - name: TLSVERIFY
-      value: false
+      value: gitea.cnoe.localtest.me:8443/giteaadmin/my-quarkus-app
+    - name: registryHost
+      value: gitea.cnoe.localtest.me:8443
+    #### End - Pipeline parameters ####
+
+    #### Begin - Buildah parameters ####
+    - name: tls-verify
+      value: 'false'
+    - name: PUSH_EXTRA_ARGS
+      value: ""
+    #### End - Buildah params ####
+
     - name: url
       value: 'https://github.com/ch007m/quarkus-orm-postgres.git'
     - name: native
       value: 'false'
     - name: podman-host
       value: 10.89.0.1 # This is the IP address that you got from the `kind` network : podman network inspect kind | jq -r '.[].subnets.[1].gateway'
-    - name: debug
-      value: false
     - name: mavenGoals
       value:
         - package
@@ -35,8 +44,10 @@ spec:
 
   pipelineRef:
     name: build-push-image
+  # Don't work as gitea.cnoe.localtest.me:8443 is resolved to localhost - 127.0.0.1 !!!
   #taskRunTemplate:
-  #  serviceAccountName: pipeline
+  #  podTemplate:
+  #    hostNetwork: true
   timeouts:
     pipeline: 1h0m0s
   workspaces:
