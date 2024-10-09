@@ -8,7 +8,9 @@ metadata:
 spec:
   params:
     - name: REGISTRY_HOST
-      value: "gitea.cnoe.localtest.me:8443"
+      value: "gite-a.cnoe.localtest.me:8443"
+    - name: DOCKER_HOST
+      value: 10.89.0.1 # podman network inspect kind | jq -r '.[].subnets.[1].gateway'
   taskSpec:
     steps:
       - name: curl-gitea
@@ -27,7 +29,7 @@ spec:
         script: |
           #!/bin/sh
           
-          echo "Creating a container against daemon host: 10.89.0.1."
-          PODMAN_CMD="podman -r --url=tcp://10.89.0.1:2375"
+          echo "Creating a container against daemon host: $(params.DOCKER_HOST)."
+          PODMAN_CMD="podman -r --url=tcp://$(params.DOCKER_HOST):2375"
           
           $PODMAN_CMD info
