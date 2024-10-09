@@ -1,32 +1,12 @@
-# How to reproduce the idpbuilder gitea issue
+# Scenario using idpbuilder and gitea
 
-The problem reported here is related to an issue with the coreDNS [rewrite](https://coredns.io/plugins/rewrite/) rules as discussed here:
-
-https://github.com/cnoe-io/idpbuilder/issues/398#issuecomment-2396906079
-
-If we change the existing rule 
-```bash
-rewrite stop {
-    name regex (.*).{{ .Host }} ingress-nginx-controller.ingress-nginx.svc.cluster.local
-}
-```
-with this one
-```bash
- rewrite stop {
-   name regex (.*).{{ .Host }} ingress-nginx-controller.ingress-nginx.svc.cluster.local answer auto
- }
- rewrite name exact cnoe.localtest.me ingress-nginx-controller.ingress-nginx.svc.cluster.local
-```
-then `buildah push` works internally.
-
-As discussed within the ticket [here](https://github.com/cnoe-io/idpbuilder/issues/398#issuecomment-2400467418), the problem can be fixed if the `rewrite rule`
-includes an `answer auto` as documented [here](https://coredns.io/plugins/rewrite/#auto-response-name-rewrite) as an answer response is needed by the tools running part of a fedora, podman, buildah, skopeo images. Such an answer rewrite of the requests is required as some DNS resolvers treat mismatches between the QUESTION SECTION and ANSWER SECTION as a man-in-the-middle attack (MITM) !
-
-
+As the issue identified part of this test case project has been [fixed](#issue-fixed), then the documentation has been updated to demonstrate
+some use cases about gitea as repository of container's images with idpbuilder.
 
 ## Pre-requisites
 
 - podman >= 5.x
+- idpbuilder >= 0.8
 
 ## Instructions
 
@@ -96,6 +76,8 @@ kubectl create ns demo
 kubectl create secret generic dockerconfig-secret --from-file=config.json=$HOME/.config/containers/auth.json -n demo
 ```
 
+## Tekton pipeline building an Quarkus application and using podman remote like gitea as image repository
+
 - Deploy the Tekton pipeline able to build/test a Quarkus application and pushing the image
   to `gitea.cnoe.localtest.me:8443/giteaadmin/my-quarkus-app`
 ```bash
@@ -152,7 +134,7 @@ tkn -n demo pr logs -f
 [buildah-image : build-and-push] sha256:4e236a2bce1f0102f505d35a2661d2e9c214f5a84373ca2942a388b3b566768bgitea.cnoe.localtest.me:8443/giteaadmin/my-quarkus-app
 ```
 
-## Step validating that a pod can be created using a gitea image
+## Pod created from an image hosted on gitea
 
 You can verify that we can pull/tag and push an image like also to run a pod using the image pushed on gitea
 ```bash
@@ -165,7 +147,7 @@ NAME        READY   STATUS    RESTARTS   AGE
 debug-pod   1/1     Running   0          2m9s
 ```
 
-## Step demonstrating that we can curl the gitea server
+## Tekton task accessing the gitea server and podman
 
 ```bash
 kubectl -n demo apply -f kubernetes/simple-task.yaml
@@ -419,5 +401,31 @@ kubectl -n demo apply -f kubernetes/simple-task.yaml
 [podman-check]   OsArch: linux/arm64
 [podman-check]   Version: 5.0.3
 ```
+
+## Issue fixed
+
+The problem reported here is related to an issue with the coreDNS [rewrite](https://coredns.io/plugins/rewrite/) rules as discussed here:
+
+https://github.com/cnoe-io/idpbuilder/issues/398#issuecomment-2396906079
+
+If we change the existing rule
+```bash
+rewrite stop {
+    name regex (.*).{{ .Host }} ingress-nginx-controller.ingress-nginx.svc.cluster.local
+}
+```
+with this one
+```bash
+ rewrite stop {
+   name regex (.*).{{ .Host }} ingress-nginx-controller.ingress-nginx.svc.cluster.local answer auto
+ }
+ rewrite name exact cnoe.localtest.me ingress-nginx-controller.ingress-nginx.svc.cluster.local
+```
+then `buildah push` works internally.
+
+As discussed within the ticket [here](https://github.com/cnoe-io/idpbuilder/issues/398#issuecomment-2400467418), the problem can be fixed if the `rewrite rule`
+includes an `answer auto` as documented [here](https://coredns.io/plugins/rewrite/#auto-response-name-rewrite) as an answer response is needed by the tools running part of a fedora, podman, buildah, skopeo images. Such an answer rewrite of the requests is required as some DNS resolvers treat mismatches between the QUESTION SECTION and ANSWER SECTION as a man-in-the-middle attack (MITM) !
+
+
 
 
