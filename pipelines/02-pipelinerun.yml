@@ -16,6 +16,7 @@ spec:
       value: src/main/docker/Dockerfile.jvm
     - name: output-image
       value: gitea.cnoe.localtest.me:8443/giteaadmin/my-quarkus-app
+      # value: my-gitea-http.gitea:3000/giteaadmin/my-quarkus-app => redirected to gitea.cnoe.localtest.me:8443 !!!
     - name: registryHost
       value: gitea.cnoe.localtest.me:8443
     #### End - Pipeline parameters ####

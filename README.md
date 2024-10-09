@@ -13,11 +13,16 @@ rewrite stop {
 with this one
 ```bash
  rewrite stop {
-   name exact gitea.cnoe.localtest.me.demo.svc.cluster.local ingress-nginx-controller.ingress-nginx.svc.cluster.local
+   name regex (.*).{{ .Host }} ingress-nginx-controller.ingress-nginx.svc.cluster.local answer auto
  }
  rewrite name exact cnoe.localtest.me ingress-nginx-controller.ingress-nginx.svc.cluster.local
 ```
-then `buildah push` works internally
+then `buildah push` works internally.
+
+As discussed within the ticket [here](https://github.com/cnoe-io/idpbuilder/issues/398#issuecomment-2400467418), the problem can be fixed if the `rewrite rule`
+includes an `answer auto` as documented [here](https://coredns.io/plugins/rewrite/#auto-response-name-rewrite) as an answer response is needed by the tools running part of a fedora, podman, buildah, skopeo images. Such an answer rewrite of the requests is required as some DNS resolvers treat mismatches between the QUESTION SECTION and ANSWER SECTION as a man-in-the-middle attack (MITM) !
+
+
 
 ## Pre-requisites
 
